@@ -1,5 +1,10 @@
 ## Hi there 👋
 
+ A student from SUSTech.
+Currently learning about how to program.
+Looking help on Java.
+Exploring interesting things.
+
 <!--
 **ars00008/ars00008** is a ✨ _special_ ✨ repository because its `README.md` (this file) appears on your GitHub profile.
 
