@@ -1,6 +1,6 @@
 ## Hi there 👋
 
-### A student from SUSTech. 
+### I am a student from SUSTech. 
 ### Currently learning about how to program. 
 ### Looking help on Java. 
 ### Exploring interesting things. 😊😊😊
