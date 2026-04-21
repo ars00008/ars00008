@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Text?>
+
+<BorderPane prefHeight="720.0" prefWidth="900.0"
+            xmlns="http://javafx.com/javafx/17"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.MatchingGame.controller.GameController">
+
+    <top>
+        <VBox spacing="8.0" BorderPane.alignment="CENTER">
+            <padding>
+                <Insets bottom="10.0" left="16.0" right="16.0" top="16.0"/>
+            </padding>
+            <Text style="-fx-font-size: 20px; -fx-font-weight: bold;" text="Game"/>
+            <HBox spacing="18">
+                <Label text="Time:"/>
+                <Label fx:id="timeLabel" text="--"/>
+                <Label text="Score:"/>
+                <Label fx:id="scoreLabel" text="0"/>
+                <Label text="Pairs:"/>
+                <Label fx:id="pairsLabel" text="--"/>
+                <Label text="Progress:"/>
+                <Label fx:id="progressLabel" text="--"/>
+            </HBox>
+            <Label fx:id="operationLabel" text=""/>
+        </VBox>
+    </top>
+
+    <center>
+        <StackPane BorderPane.alignment="CENTER">
+            <VBox alignment="CENTER" spacing="10">
+                <Label text="Board (placeholder GUI)"/>
+                <GridPane fx:id="gameGrid" hgap="4" vgap="4"/>
+            </VBox>
+        </StackPane>
+    </center>
+
+    <bottom>
+        <HBox alignment="CENTER" spacing="10" BorderPane.alignment="CENTER">
+            <padding>
+                <Insets bottom="14.0" left="16.0" right="16.0" top="14.0"/>
+            </padding>
+            <Button text="Restart" onAction="#handleRestart"/>
+            <Button text="Back to Menu" onAction="#handleBackToMenu"/>
+        </HBox>
+    </bottom>
+
+</BorderPane>
+
