@@ -9,41 +9,61 @@ public class MapGenerator {//generate a playable map
     private LinkLogic linkLogic = new LinkLogic();
     private Random random = new Random();
 
-    public int[][] generatePerfectMap(int rows, int cols, int typeCount) {
-        // basic random map
-        int[][] initialMap = new int[rows + 2][cols + 2];
-        fillPairs(initialMap, rows, cols, typeCount);
+    public int[][] generateMapByDifficulty(String mode) {
+        int rows, cols, typeCount;
 
-        // a copy for validation
-        int[][] workingMap = copyMap(initialMap);
-
-        // link start!!!
-        while (!isCleared(workingMap)) {
-            List<GridPoint[]> availablePairs = findAllAvailablePairs(workingMap);
-            // get all solvable pairs
-
-            if (availablePairs.isEmpty()) {
-                // deadlock, 都给我回来，重审！
-                applyMagicSwap(workingMap, initialMap);
-                // swap and continue work on the workingMap
-            } else {
-                // eliminate the solvable pair
-                GridPoint[] pair = availablePairs.get(random.nextInt(availablePairs.size()));
-                workingMap[pair[0].y()][pair[0].x()] = 0;
-                workingMap[pair[1].y()][pair[1].x()] = 0;
-            }
+        if ("EASY".equals(mode)) {
+            rows = 10;
+            cols = 10;
+            typeCount = 5;
+            return fillEasyPairs(rows, cols, typeCount);
+        } else {
+            rows = 10;
+            cols = 10;
+            typeCount = 12;
+            return fillHardPairs(rows, cols, typeCount);
         }
-
-        return initialMap;//map without deadlock
     }
 
-    private void fillPairs(int[][] map, int rows, int cols, int typeCount) {//create random map
+    private int[][] fillEasyPairs(int rows, int cols, int typeCount) {
+        int[][] map = new int[rows + 2][cols + 2];
         List<Integer> list = new ArrayList<>();
-        int totalPairs = (rows * cols) / 2;
-        for (int i = 0; i < totalPairs; i++) {
+
+        int totalCells = 4 * 4 * 2; // 2 of 4 by 4
+        for (int i = 0; i < totalCells / 2; i++) {
+            int type = (i % typeCount) + 1;// at least 5 types
             list.add((i % typeCount) + 1);
             list.add((i % typeCount) + 1);
-        }//for different patterns
+        }
+        Collections.shuffle(list);
+
+        int index = 0;
+        // up 4 by 4
+        for (int r = 1; r <= 4; r++) {
+            for (int c = 1; c <= 4; c++) {
+                map[r][c] = list.get(index++);
+            }
+        }
+        // down 4 by 4
+        for (int r = 6; r <= 9; r++) {
+            for (int c = 6; c <= 9; c++) {
+                map[r][c] = list.get(index++);
+            }
+        }
+        return map;
+    }
+
+    private int[][] fillHardPairs(int rows, int cols, int typeCount) {
+        int[][] map = new int[rows + 2][cols + 2];
+        List<Integer> list = new ArrayList<>();
+
+        int totalCells = rows * cols;
+
+        for (int i = 0; i < totalCells / 2; i++) {
+            int type = (i % typeCount) + 1;// 12 types
+            list.add(type);
+            list.add(type);
+        }
         Collections.shuffle(list);
 
         int index = 0;
@@ -52,6 +72,7 @@ public class MapGenerator {//generate a playable map
                 map[r][c] = list.get(index++);
             }
         }
+        return map;
     }
 
     private void applyMagicSwap(int[][] workingMap, int[][] initialMap) {//fix the deadlock until there's at least one solution
@@ -102,6 +123,27 @@ public class MapGenerator {//generate a playable map
         return pairs;
     }
 
+    public void shuffleSpecificMode(int[][] map) {
+        List<Integer> values = new ArrayList<>();
+        List<GridPoint> positions = new ArrayList<>();
+
+        for (int r = 1; r < map.length - 1; r++) {//scan and only record points with values
+            for (int c = 1; c < map[0].length - 1; c++) {
+                if (map[r][c] != 0) {
+                    values.add(map[r][c]);
+                    positions.add(new GridPoint(c, r)); // record
+                }
+            }
+        }
+
+        Collections.shuffle(values);//shuffle with valid points
+
+        for (int i = 0; i < positions.size(); i++) {
+            GridPoint pos = positions.get(i);
+            map[pos.y()][pos.x()] = values.get(i);
+        }
+    }
+
     private List<GridPoint> getRemainingPoints(int[][] map) {
         List<GridPoint> list = new ArrayList<>();
         for (int r = 1; r < map.length - 1; r++) {
@@ -118,6 +160,7 @@ public class MapGenerator {//generate a playable map
         map[p2.y()][p2.x()] = temp;
     }//swap points
 
+    /**
     private boolean isCleared(int[][] map) {
         for (int r = 1; r < map.length - 1; r++) {
             for (int c = 1; c < map[0].length - 1; c++) {
@@ -134,4 +177,5 @@ public class MapGenerator {//generate a playable map
         }
         return copy;
     }//影分身の術
+    */
 }

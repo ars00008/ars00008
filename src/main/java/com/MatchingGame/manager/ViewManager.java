@@ -10,7 +10,7 @@ public class ViewManager {
     private static ViewManager instance;
     private Stage mainStage;
     private final AppContext appContext;
-    //static instance, make it easier for controller to catch
+
     private ViewManager(Stage stage) {
         this.mainStage = stage;
         this.appContext = new AppContext();
@@ -33,7 +33,43 @@ public class ViewManager {
     public void goToMainMenu() {
         switchScene("/fxml/MainMenuView.fxml");
     }
-    public void goToGame() { switchScene("/fxml/GameView.fxml"); }
+
+    public void goToGame(String difficulty) {
+        try {
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/GameView.fxml"));
+        Parent root = loader.load();
+
+        com.MatchingGame.controller.GameController controller = loader.getController();
+        controller.setDifficulty(difficulty);
+
+        Scene scene = new Scene(root);
+        mainStage.setScene(scene);
+        mainStage.centerOnScreen();
+        mainStage.show();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void goToGameOver(int score, String mode, boolean isVictory) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/GameOverView.fxml"));
+            Parent root = loader.load();
+
+            com.MatchingGame.controller.GameOverController controller = loader.getController();
+            controller.initData(score, mode, isVictory);
+            //pass in score and previous mode(for restart)
+
+
+            Scene scene = new Scene(root);
+            mainStage.setScene(scene);
+            mainStage.centerOnScreen();
+            mainStage.show();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     public void goToRegister() {
         switchScene("/fxml/RegisterView.fxml");
     }

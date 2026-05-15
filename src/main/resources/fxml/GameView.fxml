@@ -21,7 +21,7 @@
                 <Label fx:id="timeLabel" text="--"/>
                 <Label text="Score:"/>
                 <Label fx:id="scoreLabel" text="0"/>
-                <Label text="Pairs:"/>
+                <Label text="Pairs Remain:"/>
                 <Label fx:id="pairsLabel" text="--"/>
                 <Label text="Progress:"/>
                 <Label fx:id="progressLabel" text="--"/>
@@ -31,12 +31,17 @@
     </top>
 
     <center>
-        <StackPane BorderPane.alignment="CENTER">
-            <VBox alignment="CENTER" spacing="10">
-                <Label text="Board (placeholder GUI)"/>
-                <GridPane fx:id="gameGrid" hgap="4" vgap="4"/>
-            </VBox>
-        </StackPane>
+        <ScrollPane fitToHeight="true" fitToWidth="true" style="-fx-background-color: #F5F5F5;">
+            <StackPane>
+                <padding>
+                    <Insets top="20" left="250" bottom="20" right="20"/>
+                </padding>
+                <GridPane fx:id="gameGrid"
+                          hgap="3"
+                          vgap="3"/>
+            </StackPane>
+        </ScrollPane>
+
     </center>
 
     <bottom>

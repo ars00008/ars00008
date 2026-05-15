@@ -2,7 +2,7 @@ package com.MatchingGame.logic;
 
 public class LinkLogic {
     public boolean judge(GridPoint p1, GridPoint p2, int[][] map) {
-        if (p1.equals(p2) || map[p1.x()][p1.y()] != map[p2.x()][p2.y()]) return false;
+        if (p1.equals(p2) || map[p1.y()][p1.x()] != map[p2.y()][p2.x()]) return false;
         //cant be the same point, and the two point must have same paterns
         if (isLineLink(p1, p2, map)) return true;
         //with 0 time of turn
@@ -17,24 +17,28 @@ public class LinkLogic {
         if (p1.x() == p2.x() && p1.y() == p2.y()) return false;//if same point
         if (p1.x() != p2.x() && p1.y() != p2.y()) return false;//if not on same row or same column, return false directly
 
-        int startY = Math.min(p1.x(), p2.x());
-        int startX = Math.min(p1.y(), p2.y());
-        int endY = Math.max(p1.x(), p2.x());
-        int endX = Math.max(p1.y(), p2.y());
+        int x1 = p1.x(), y1 = p1.y();
+        int x2 = p2.x(), y2 = p2.y();
         //get the positions for a line judge
 
-        if (startY==endY){
-            for (int i = startX+1; i < endX; i++) {
-                if (map[startY][i] != 0) return false;
-            }//line link by same row
-        }
-        if (startX==endX){
-            for (int i = startY+1; i < endY; i++) {
-                if (map[i][startX] != 0) return false;
-            }//line by same column
-        }
+        if (y1 == y2) {
+            int minX = Math.min(x1, x2);
+            int maxX = Math.max(x1, x2);
+            for (int x = minX + 1; x < maxX; x++) {
+                if (map[y1][x] != 0) return false;
+            }
+            return true;
+        }//link by same row
+        if (x1 == x2) {
+            int minY = Math.min(y1, y2);
+            int maxY = Math.max(y1, y2);
+            for (int y = minY + 1; y < maxY; y++) {
+                if (map[y][x1] != 0) return false;
+            }
+            return true;
+        }//link by same column
 
-        return true;
+        return false;
     }
 
 
@@ -43,13 +47,13 @@ public class LinkLogic {
         GridPoint c2 = new GridPoint(p2.x(), p1.y());
         //possible turn point for a one-turn route
 
-        if (map[c1.x()][c1.y()] == 0) {
+        if (map[c1.y()][c1.x()] == 0) {
             if (isLineLink(p1, c1, map) && isLineLink(c1, p2, map)) {
                 return true;
             }
         }//check the validity of c1
 
-        if (map[c2.x()][c2.y()] == 0) {
+        if (map[c2.y()][c2.x()] == 0) {
             if (isLineLink(p1, c2, map) && isLineLink(c2, p2, map)) {
                 return true;
             }
@@ -59,6 +63,9 @@ public class LinkLogic {
     }
 
     private boolean isTwoTurnLink(GridPoint p1, GridPoint p2, int[][] map) {
+        int rows = map.length;
+        int cols = map[0].length;
+
         int[] dx = {0, 0, 1, -1};
         int[] dy = {1, -1, 0, 0};
         //look for possible turn point on the four directions(up, down, right, left)
@@ -67,18 +74,22 @@ public class LinkLogic {
             int nextX = p1.x() + dx[i];
             int nextY = p1.y() + dy[i];
 
-            while (nextX >= 0 && nextX < map.length && nextY >= 0 && nextY < map[0].length
-                    && map[nextX][nextY] == 0) {// scan if the grid is in the map and is empty
+            while (nextX >= 0 && nextX < cols && nextY >= 0 && nextY < rows) {// scan if the grid is in the map and is empty
+                if (map[nextY][nextX] != 0) {//p1 and p2 are connected by a straight line
+                    if (nextX == p2.x() && nextY == p2.y()) {
+                        if (isLineLink(p1, p2, map)) return true;
+                    }
+                    break;//meet other point, stop scanning
+                }
 
-                GridPoint tempPoint = new GridPoint(nextX, nextY);
+                GridPoint tempPoint = new GridPoint(nextX, nextY);//first turn point
 
                 if (isOneTurnLink(tempPoint, p2, map)) {
-                    return true; // find
-                }// if the turn point can link to p2 with a one-turn route
+                    return true;
+                }//one turn from the turning point
 
                 nextX += dx[i];
                 nextY += dy[i];
-                // do not find a valid link, continue to find
             }
         }
         return false;

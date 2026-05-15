@@ -23,12 +23,12 @@ public class MainMenuController {
 
     @FXML
     public void handleStartEasy() {
-        ViewManager.getInstance().goToGame();
+        ViewManager.getInstance().goToGame("EASY");
     }
 
     @FXML
     public void handleStartHard() {
-        ViewManager.getInstance().goToGame();
+        ViewManager.getInstance().goToGame("HARD");
     }
 
     @FXML
