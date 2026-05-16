@@ -102,7 +102,7 @@ public class MapGenerator {//generate a playable map
 
     // tool methods
 
-    private List<GridPoint[]> findAllAvailablePairs(int[][] map) {
+    public static List<GridPoint[]> findAllAvailablePairs(int[][] map) {
         List<GridPoint[]> pairs = new ArrayList<>();
         for (int r1 = 1; r1 < map.length - 1; r1++) {
             for (int c1 = 1; c1 < map[0].length - 1; c1++) {
@@ -112,7 +112,7 @@ public class MapGenerator {//generate a playable map
                         if (map[r1][c1] == map[r2][c2]) {
                             GridPoint p1 = new GridPoint(c1, r1);
                             GridPoint p2 = new GridPoint(c2, r2);
-                            if (linkLogic.judge(p1, p2, map)) {
+                            if (LinkLogic.judge(p1, p2, map)) {
                                 pairs.add(new GridPoint[]{p1, p2});
                             }// go for all points and all points for all pairs to check link logic
                         }
@@ -160,22 +160,4 @@ public class MapGenerator {//generate a playable map
         map[p2.y()][p2.x()] = temp;
     }//swap points
 
-    /**
-    private boolean isCleared(int[][] map) {
-        for (int r = 1; r < map.length - 1; r++) {
-            for (int c = 1; c < map[0].length - 1; c++) {
-                if (map[r][c] != 0) return false;
-            }
-        }
-        return true;
-    }//check if is empty
-
-    private int[][] copyMap(int[][] original) {
-        int[][] copy = new int[original.length][original[0].length];
-        for (int i = 0; i < original.length; i++) {
-            System.arraycopy(original[i], 0, copy[i], 0, original[i].length);
-        }
-        return copy;
-    }//影分身の術
-    */
 }

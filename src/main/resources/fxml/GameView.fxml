@@ -50,9 +50,9 @@
                 <Insets bottom="14.0" left="16.0" right="16.0" top="14.0"/>
             </padding>
             <Button text="Restart" onAction="#handleRestart"/>
+            <Button fx:id="saveButton" text="Save Slot 1" onAction="#handleSaveGame"/>
             <Button text="Back to Menu" onAction="#handleBackToMenu"/>
         </HBox>
     </bottom>
 
 </BorderPane>
-

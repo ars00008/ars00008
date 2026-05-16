@@ -16,16 +16,12 @@
                 <Insets bottom="12.0" left="16.0" right="16.0" top="16.0"/>
             </padding>
             <Text style="-fx-font-size: 20px; -fx-font-weight: bold;" text="Ranks"/>
-            <Label text="Ranking list (placeholder)."/>
+            <Label fx:id="summaryLabel" text=""/>
         </VBox>
     </top>
 
     <center>
-        <VBox alignment="CENTER" spacing="8">
-            <Label text="1. Alice - 1200"/>
-            <Label text="2. Bob - 980"/>
-            <Label text="3. Carol - 760"/>
-            <Label text="(Later: load from local storage and sort by score.)"/>
+        <VBox fx:id="resultsBox" alignment="CENTER" spacing="8">
         </VBox>
     </center>
 
@@ -39,4 +35,3 @@
     </bottom>
 
 </BorderPane>
-

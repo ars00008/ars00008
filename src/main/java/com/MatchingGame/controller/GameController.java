@@ -1,15 +1,24 @@
 package com.MatchingGame.controller;
 
 import com.MatchingGame.logic.MapGenerator;
+import com.MatchingGame.manager.InvalidSaveException;
+import com.MatchingGame.manager.RankStore;
+import com.MatchingGame.manager.SaveStore;
 import com.MatchingGame.manager.ViewManager;
+import com.MatchingGame.model.GameResult;
+import com.MatchingGame.model.SaveGameData;
 import javafx.fxml.FXML;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 
-import static com.MatchingGame.logic.AvailablePairsFounder.findAllAvailablePairs;
+import java.io.IOException;
+
+import static com.MatchingGame.logic.MapGenerator.findAllAvailablePairs;
 
 
 public class GameController {
@@ -21,6 +30,7 @@ public class GameController {
     @FXML private Label pairsLabel;
     @FXML private Label progressLabel;
     @FXML private Label operationLabel;
+    @FXML private Button saveButton;
     //fxml variables
 
     private CellPos firstSelected = null;
@@ -44,11 +54,13 @@ public class GameController {
     private int totalPairsEliminated = 0;
     private int totalPairsCount = 0;
     //for timer
+    private final SaveStore saveStore = new SaveStore();
+    private final RankStore rankStore = new RankStore();
 
     @FXML
     public void initialize() {
         firstSelected = null;
-        this.remainingTime = (this.currentMode == "EASY") ? 60 : 150;
+        this.remainingTime = (this.currentMode.equals("EASY")) ? 60 : 150;
         this.currentScore = 0;
         this.totalPairsEliminated = 0;//initialize score related variables
 
@@ -57,13 +69,10 @@ public class GameController {
         progressLabel.setText("0");
         pairsLabel.setText("--");//initialize GUI
 
-        if ("EASY".equals(currentMode)) {
-            this.totalPairsCount = (4 * 4 * 2) / 2; // 16
-        } else {
-            this.totalPairsCount = (10 * 10) / 2; // 50
-        }//count pairs by modes
-
         operationLabel.setText("Loading...");
+        if (saveButton != null) {
+            saveButton.setDisable(ViewManager.getInstance().getAppContext().isGuest());
+        }
     }
 
     public void setDifficulty(String difficulty) {
@@ -82,10 +91,11 @@ public class GameController {
 
         initialize();
         totalPairsCount = "EASY".equals(currentMode) ? 16 : 50;
+        //count pairs by modes
         scoreLabel.setText(String.valueOf(currentScore));
         pairsLabel.setText(String.valueOf(this.totalPairsCount));
         progressLabel.setText("0%");
-        timeLabel.setText(String.valueOf(currentScore));
+        timeLabel.setText(this.remainingTime + "s");
         //show on labels
 
         this.gameMap = mapGenerator.generateMapByDifficulty(currentMode);
@@ -95,6 +105,27 @@ public class GameController {
         operationLabel.setText("Mode: " + currentMode);
 
         startScoreTimer();//start counting
+    }
+
+    public void loadSavedGame(SaveGameData saveGameData) {
+        if (gameTimer != null) gameTimer.stop();
+
+        firstSelected = null;
+        firstSelectedNode = null;
+        this.currentMode = saveGameData.difficulty;
+        this.ROWS = saveGameData.rows;
+        this.COLS = saveGameData.cols;
+        this.gameMap = copyMap(saveGameData.gameMap);
+        this.currentScore = saveGameData.currentScore;
+        this.remainingTime = saveGameData.remainingTime;
+        this.totalPairsEliminated = saveGameData.totalPairsEliminated;
+        this.totalPairsCount = saveGameData.totalPairsCount;
+        this.gameGrid.setDisable(false);
+
+        updateStatusLabels();
+        renderBoard();
+        operationLabel.setText("Loaded save: " + currentMode);
+        startScoreTimer();
     }
 
     private void startScoreTimer() {
@@ -217,12 +248,7 @@ public class GameController {
                     currentScore += 5;
                     totalPairsEliminated++;
                     //updateScore
-                    double progress = (double) totalPairsEliminated / totalPairsCount * 100;
-                    //updateProgress
-                    scoreLabel.setText(String.valueOf(currentScore));
-                    pairsLabel.setText(String.valueOf(totalPairsCount - totalPairsEliminated));
-                    progressLabel.setText(String.format("%.1f%%", progress));
-                    //update GUI
+                    updateStatusLabels();
 
                     if (!checkIfGameFinished()) {
                         autoShuffleIfDeadEnd();
@@ -284,6 +310,59 @@ public class GameController {
         };
     }
 
+    private void updateStatusLabels() {
+        double progress = totalPairsCount == 0 ? 0 : (double) totalPairsEliminated / totalPairsCount * 100;
+        scoreLabel.setText(String.valueOf(currentScore));
+        pairsLabel.setText(String.valueOf(Math.max(0, totalPairsCount - totalPairsEliminated)));
+        progressLabel.setText(String.format("%.1f%%", progress));
+        timeLabel.setText(remainingTime + "s");
+    }
+
+    private void refreshProgressFromBoard() {
+        int remainingTiles = 0;
+        for (int r = 1; r <= ROWS; r++) {
+            for (int c = 1; c <= COLS; c++) {
+                if (gameMap[r][c] != 0) {
+                    remainingTiles++;
+                }
+            }
+        }
+        totalPairsEliminated = totalPairsCount - remainingTiles / 2;
+    }
+
+    private int[][] copyMap(int[][] original) {
+        int[][] copy = new int[original.length][];
+        for (int i = 0; i < original.length; i++) {
+            copy[i] = new int[original[i].length];
+            System.arraycopy(original[i], 0, copy[i], 0, original[i].length);
+        }
+        return copy;
+    }
+
+    private void showAlert(Alert.AlertType type, String message) {
+        Alert alert = new Alert(type);
+        alert.setTitle("Message");
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
+
+    private void saveGameResult(boolean victory) {
+        var context = ViewManager.getInstance().getAppContext();
+        if (context.isGuest()) {
+            return;
+        }
+        String username = context.getUsername().orElse("");
+        if (username.isBlank()) {
+            return;
+        }
+        try {
+            rankStore.addResult(new GameResult(username, currentScore, currentMode, victory, System.currentTimeMillis()));
+        } catch (IOException e) {
+            System.err.println("Could not save game result: " + e.getMessage());
+        }
+    }
+
     @FXML
     public void handleRestart() {
         if (gameTimer != null) gameTimer.stop();
@@ -300,8 +379,42 @@ public class GameController {
     }
 
     @FXML
+    public void handleSaveGame() {
+        var context = ViewManager.getInstance().getAppContext();
+        if (context.isGuest()) {
+            showAlert(Alert.AlertType.INFORMATION, "Guest mode cannot save.");
+            return;
+        }
+
+        String username = context.getUsername().orElse("");
+        try {
+            refreshProgressFromBoard();
+            saveStore.save(new SaveGameData(
+                    username,
+                    currentMode,
+                    ROWS,
+                    COLS,
+                    copyMap(gameMap),
+                    currentScore,
+                    remainingTime,
+                    totalPairsEliminated,
+                    totalPairsCount,
+                    System.currentTimeMillis()
+            ));
+            updateStatusLabels();
+            operationLabel.setText("Game saved to Slot 1.");
+            showAlert(Alert.AlertType.INFORMATION, "Saved to Slot 1.");
+        } catch (IOException e) {
+            showAlert(Alert.AlertType.ERROR, "Save failed.");
+        } catch (InvalidSaveException e) {
+            showAlert(Alert.AlertType.ERROR, "Current game state cannot be saved.");
+        }
+    }
+
+    @FXML
     private void handleGameFailure() {
         if (gameTimer != null) gameTimer.stop();
+        saveGameResult(false);
         gameGrid.setDisable(true);
         operationLabel.setText("Time is up, game over!");
         javafx.animation.PauseTransition pause = new javafx.animation.PauseTransition(javafx.util.Duration.seconds(1.5));
@@ -313,6 +426,7 @@ public class GameController {
 
     @FXML
     private void handleGameVictory() {
+        saveGameResult(true);
         operationLabel.setText("Congratulates...");
         javafx.animation.PauseTransition pause = new javafx.animation.PauseTransition(javafx.util.Duration.seconds(1));
         pause.setOnFinished(event -> {

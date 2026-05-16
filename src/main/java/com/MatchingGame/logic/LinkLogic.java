@@ -1,7 +1,7 @@
 package com.MatchingGame.logic;
 
 public class LinkLogic {
-    public boolean judge(GridPoint p1, GridPoint p2, int[][] map) {
+    public static boolean judge(GridPoint p1, GridPoint p2, int[][] map) {
         if (p1.equals(p2) || map[p1.y()][p1.x()] != map[p2.y()][p2.x()]) return false;
         //cant be the same point, and the two point must have same paterns
         if (isLineLink(p1, p2, map)) return true;
@@ -13,7 +13,7 @@ public class LinkLogic {
         return false;//cant link
     }
 
-    private boolean isLineLink(GridPoint p1, GridPoint p2, int[][] map) {
+    private static boolean isLineLink(GridPoint p1, GridPoint p2, int[][] map) {
         if (p1.x() == p2.x() && p1.y() == p2.y()) return false;//if same point
         if (p1.x() != p2.x() && p1.y() != p2.y()) return false;//if not on same row or same column, return false directly
 
@@ -42,7 +42,7 @@ public class LinkLogic {
     }
 
 
-    private boolean isOneTurnLink(GridPoint p1, GridPoint p2, int[][] map) {
+    private static boolean isOneTurnLink(GridPoint p1, GridPoint p2, int[][] map) {
         GridPoint c1 = new GridPoint(p1.x(), p2.y());
         GridPoint c2 = new GridPoint(p2.x(), p1.y());
         //possible turn point for a one-turn route
@@ -62,7 +62,7 @@ public class LinkLogic {
         return false;
     }
 
-    private boolean isTwoTurnLink(GridPoint p1, GridPoint p2, int[][] map) {
+    private static boolean isTwoTurnLink(GridPoint p1, GridPoint p2, int[][] map) {
         int rows = map.length;
         int cols = map[0].length;
 

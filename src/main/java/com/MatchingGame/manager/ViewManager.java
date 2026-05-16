@@ -5,6 +5,7 @@ import javafx.stage.Stage;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import java.io.IOException;
+import com.MatchingGame.model.SaveGameData;
 
 public class ViewManager {
     private static ViewManager instance;
@@ -35,17 +36,29 @@ public class ViewManager {
     }
 
     public void goToGame(String difficulty) {
+        showGame(difficulty, null);
+    }
+
+    public void goToGame(SaveGameData saveGameData) {
+        showGame(saveGameData.difficulty, saveGameData);
+    }
+
+    private void showGame(String difficulty, SaveGameData saveGameData) {
         try {
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/GameView.fxml"));
-        Parent root = loader.load();
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/GameView.fxml"));
+            Parent root = loader.load();
 
-        com.MatchingGame.controller.GameController controller = loader.getController();
-        controller.setDifficulty(difficulty);
+            com.MatchingGame.controller.GameController controller = loader.getController();
+            if (saveGameData == null) {
+                controller.setDifficulty(difficulty);
+            } else {
+                controller.loadSavedGame(saveGameData);
+            }
 
-        Scene scene = new Scene(root);
-        mainStage.setScene(scene);
-        mainStage.centerOnScreen();
-        mainStage.show();
+            Scene scene = new Scene(root);
+            mainStage.setScene(scene);
+            mainStage.centerOnScreen();
+            mainStage.show();
         } catch (IOException e) {
             e.printStackTrace();
         }
